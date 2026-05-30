@@ -39,11 +39,14 @@ ecommerce-devsecops/
 │   ├── admin/routes.py      # Admin dashboard + CRUD
 │   ├── templates/           # Jinja2 HTML templates
 │   └── static/              # CSS, JS, images
+│       └── img/products/    # Bundled demo product images (SVG)
 ├── docker/Dockerfile        # Production Docker image
 ├── docker-compose.yml       # Local dev stack
 ├── config/nginx.conf        # Nginx reverse proxy + security headers
 ├── jenkins/Jenkinsfile      # CI/CD pipeline
 ├── scripts/
+│   ├── seed_data.py         # Seed admin + sample products/categories
+│   ├── generate_images.py   # Generate local product images (SVG)
 │   ├── backup.sh            # Automated DB + S3 backup
 │   └── setup_server.sh      # EC2 server setup script
 ├── tests/                   # Pytest tests
@@ -70,11 +73,48 @@ docker-compose up -d
 # 4. Run database migrations
 docker exec ecommerce_app flask db upgrade
 
-# 5. Open browser
+# 5. Seed the admin user + sample catalogue (with product images)
+docker exec ecommerce_app python scripts/seed_data.py
+
+# 6. Open browser
 open http://localhost
 ```
 
 **Default admin credentials:** `admin@store.com` / `Admin@123456`
+
+### Running without Docker
+
+```bash
+python -m venv venv && source venv/bin/activate   # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+
+# Use development settings (serves cookies over plain HTTP, debug on)
+# In .env set:  FLASK_ENV=development
+python scripts/seed_data.py     # seed admin + sample products
+python run.py                   # http://localhost:5000
+```
+
+> **Note:** `FLASK_ENV=production` marks the JWT auth cookies as `Secure`, so they
+> are only stored over **HTTPS**. When running locally over plain HTTP, use
+> `FLASK_ENV=development` or you will appear unable to log in.
+
+---
+
+## Sample Data & Product Images
+
+The catalogue ships with 16 demo products across 5 categories, each with a
+category-themed image bundled in `app/static/img/products/`.
+
+```bash
+python scripts/seed_data.py        # inserts admin, categories & products
+python scripts/generate_images.py  # (re)generate the product images
+```
+
+Images are stored on each product as an `image_key`. Locally bundled images use a
+`local/...` key and are served straight from `/static/img/`; in production an AWS
+**S3** object key is used instead and served via **CloudFront** (see
+`Product.image_url`). Admin-uploaded images are resized and pushed to S3
+automatically.
 
 ---
 

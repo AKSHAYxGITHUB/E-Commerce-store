@@ -66,6 +66,10 @@ class Product(db.Model):
         from flask import current_app
         if not self.image_key:
             return "/static/img/placeholder.png"
+        # Locally bundled image (seeded demo data / dev without S3).
+        # Stored as "local/<path>" and served straight from /static/img/.
+        if self.image_key.startswith("local/"):
+            return f"/static/img/{self.image_key[len('local/'):]}"
         cf = current_app.config.get("CLOUDFRONT_DOMAIN")
         bucket = current_app.config.get("S3_BUCKET")
         if cf:

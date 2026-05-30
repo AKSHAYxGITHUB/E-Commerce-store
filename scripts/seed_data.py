@@ -29,6 +29,7 @@ PRODUCTS = [
         "price":       4999.00,
         "stock":       25,
         "category":    "electronics",
+        "image":       "headphones.svg",
     },
     {
         "name":        "Mechanical Gaming Keyboard",
@@ -36,6 +37,7 @@ PRODUCTS = [
         "price":       2799.00,
         "stock":       40,
         "category":    "electronics",
+        "image":       "gaming-keyboard.svg",
     },
     {
         "name":        "4K Ultra HD Smart TV 43\"",
@@ -43,6 +45,7 @@ PRODUCTS = [
         "price":       32999.00,
         "stock":       10,
         "category":    "electronics",
+        "image":       "smart-tv.svg",
     },
     {
         "name":        "Wireless Earbuds Pro",
@@ -50,6 +53,7 @@ PRODUCTS = [
         "price":       1899.00,
         "stock":       60,
         "category":    "electronics",
+        "image":       "earbuds.svg",
     },
 
     # Fashion
@@ -59,6 +63,7 @@ PRODUCTS = [
         "price":       799.00,
         "stock":       100,
         "category":    "fashion",
+        "image":       "polo-shirt.svg",
     },
     {
         "name":        "Women's Running Sneakers",
@@ -66,6 +71,7 @@ PRODUCTS = [
         "price":       1499.00,
         "stock":       75,
         "category":    "fashion",
+        "image":       "sneakers.svg",
     },
     {
         "name":        "Leather Crossbody Bag",
@@ -73,6 +79,7 @@ PRODUCTS = [
         "price":       2199.00,
         "stock":       30,
         "category":    "fashion",
+        "image":       "crossbody-bag.svg",
     },
 
     # Home & Kitchen
@@ -82,6 +89,7 @@ PRODUCTS = [
         "price":       3499.00,
         "stock":       20,
         "category":    "home-kitchen",
+        "image":       "air-fryer.svg",
     },
     {
         "name":        "Bamboo Cutting Board Set (3-piece)",
@@ -89,6 +97,7 @@ PRODUCTS = [
         "price":       549.00,
         "stock":       85,
         "category":    "home-kitchen",
+        "image":       "cutting-board.svg",
     },
     {
         "name":        "Smart Robotic Vacuum Cleaner",
@@ -96,6 +105,7 @@ PRODUCTS = [
         "price":       14999.00,
         "stock":       8,
         "category":    "home-kitchen",
+        "image":       "robot-vacuum.svg",
     },
 
     # Sports
@@ -105,6 +115,7 @@ PRODUCTS = [
         "price":       6999.00,
         "stock":       15,
         "category":    "sports",
+        "image":       "dumbbell-set.svg",
     },
     {
         "name":        "Yoga Mat Premium Anti-Slip 6mm",
@@ -112,6 +123,7 @@ PRODUCTS = [
         "price":       899.00,
         "stock":       50,
         "category":    "sports",
+        "image":       "yoga-mat.svg",
     },
     {
         "name":        "GPS Running Watch",
@@ -119,6 +131,7 @@ PRODUCTS = [
         "price":       8999.00,
         "stock":       18,
         "category":    "sports",
+        "image":       "gps-watch.svg",
     },
 
     # Books
@@ -128,6 +141,7 @@ PRODUCTS = [
         "price":       649.00,
         "stock":       200,
         "category":    "books",
+        "image":       "clean-code.svg",
     },
     {
         "name":        "Atomic Habits – James Clear",
@@ -135,6 +149,7 @@ PRODUCTS = [
         "price":       399.00,
         "stock":       150,
         "category":    "books",
+        "image":       "atomic-habits.svg",
     },
     {
         "name":        "The DevOps Handbook",
@@ -142,6 +157,7 @@ PRODUCTS = [
         "price":       799.00,
         "stock":       80,
         "category":    "books",
+        "image":       "devops-handbook.svg",
     },
 ]
 
@@ -179,6 +195,7 @@ def seed():
 
         # ── Products ──────────────────────────────────────────────────────────
         for p in PRODUCTS:
+            image_key = f"local/products/{p['image']}" if p.get("image") else None
             existing = Product.query.filter_by(name=p["name"]).first()
             if not existing:
                 category = cat_map.get(p["category"])
@@ -188,10 +205,15 @@ def seed():
                     price=p["price"],
                     stock=p["stock"],
                     category_id=category.id if category else None,
+                    image_key=image_key,
                     is_active=True,
                 )
                 db.session.add(product)
                 print(f"[+] Created product: {p['name']}")
+            elif image_key and not existing.image_key:
+                # backfill image for products seeded before images existed
+                existing.image_key = image_key
+                print(f"[~] Added image to existing product: {p['name']}")
             else:
                 print(f"[=] Product exists: {p['name']}")
 

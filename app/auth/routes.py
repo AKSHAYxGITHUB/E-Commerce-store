@@ -97,8 +97,8 @@ def login():
             return render_template("auth/login.html", email=email)
 
         additional_claims = {"role": user.role, "name": user.name}
-        access_token = create_access_token(identity=user.id, additional_claims=additional_claims)
-        refresh_token = create_refresh_token(identity=user.id)
+        access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
+        refresh_token = create_refresh_token(identity=str(user.id))
 
         next_page = request.args.get("next")
         if user.is_admin():
