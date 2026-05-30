@@ -1,6 +1,5 @@
 # ShopSecure – Cloud-Based E-Commerce DevSecOps Project
 
-![IPSR Capstone](https://img.shields.io/badge/IPSR-Capstone-blue)
 ![Flask](https://img.shields.io/badge/Flask-3.0-green)
 ![AWS](https://img.shields.io/badge/AWS-EC2%20%7C%20RDS%20%7C%20S3-orange)
 ![Docker](https://img.shields.io/badge/Docker-Containerized-blue)
@@ -22,6 +21,58 @@
 | Cloud | AWS EC2, RDS, S3, CloudFront, ALB, Route 53 |
 | Monitoring | AWS CloudWatch |
 | Security | bcrypt, JWT, Flask-Limiter, Fail2ban, WAF |
+
+---
+
+## Application Workflow
+
+### Customer journey
+
+```
+Browse store ──▶ Register / Login ──▶ Add to cart ──▶ Checkout ──▶ Order placed ──▶ Track orders
+   (public)        (JWT cookie)        (cart badge)    (shipping)   (stock ↓)        (My Orders)
+```
+
+1. A visitor browses the **home page**, **product list** and **product details** (public, no login).
+2. They **register** and **log in** — the app issues a signed **JWT** stored in an HTTP-only cookie.
+3. Logged-in users **add products to the cart** (the navbar shows a live item-count badge), update quantities or remove items.
+4. At **checkout** they enter shipping details; an **Order** + **OrderItems** are created, product stock is decremented, and the cart is cleared — all in one DB transaction.
+5. Users review past purchases under **My Orders**.
+
+### Admin journey
+
+```
+Login (admin) ──▶ Dashboard (stats) ──▶ Manage Products / Orders / Users
+                                          (CRUD, image upload, status, enable/disable)
+```
+
+- **Dashboard** — totals for users, products, orders, revenue, plus recent orders and low-stock alerts.
+- **Products** — create/edit/delete (soft delete); images are resized and uploaded to **S3**.
+- **Orders** — view details and update status (`pending → confirmed → shipped → delivered / cancelled`).
+- **Users** — enable/disable customer accounts.
+
+### Request lifecycle (production)
+
+```
+Browser
+  │  HTTPS (TLS via ACM)
+  ▼
+Route 53 ──▶ ALB + AWS WAF ──▶ Nginx (reverse proxy, security headers, rate limit)
+                                   │
+                                   ▼
+                            Gunicorn → Flask app  (Docker container on EC2, private subnet)
+                                   │
+                ┌──────────────────┼─────────────────────┐
+                ▼                  ▼                     ▼
+          MySQL (RDS)       S3 + CloudFront         CloudWatch
+        (data, orders)     (product images)        (logs/metrics)
+```
+
+### CI/CD flow
+
+```
+git push ──▶ Jenkins ──▶ Build Docker image ──▶ Run pytest ──▶ Trivy security scan ──▶ Deploy to EC2
+```
 
 ---
 
@@ -53,6 +104,70 @@ ecommerce-devsecops/
 ├── requirements.txt
 └── .env.example
 ```
+
+---
+
+## Repository Files — Detailed Reference
+
+### Application core (`app/`)
+
+| File | Responsibility |
+|------|----------------|
+| `app/__init__.py` | **App factory** (`create_app`). Initialises SQLAlchemy, Migrate, JWT, Bcrypt, Flask-Limiter and CSRF; registers the `auth`, `store`, `admin` blueprints; defines the `/health` check, JWT/error handlers, file logging, the **cart-count** template global, and seeds a default admin + categories on first run. |
+| `app/config.py` | Configuration classes — `BaseConfig`, `Development`, `Production`, `Testing`. Holds DB URI, JWT/cookie settings, S3/CloudFront, rate-limit, upload and pagination settings. Switched via `FLASK_ENV`. |
+| `app/models.py` | SQLAlchemy models: **User, Category, Product, Cart, Order, OrderItem**, including the `Product.image_url` property (local / S3 / CloudFront) and `subtotal` helpers. |
+| `app/utils.py` | Shared helpers — input `sanitize()` (bleach), `login_required` / `admin_required` decorators, `current_user()`, and S3 image upload/delete with Pillow resizing. |
+
+### Blueprints (routes)
+
+| File | Responsibility |
+|------|----------------|
+| `app/auth/routes.py` | Register, login, logout, profile. Validates input, hashes passwords with bcrypt, issues JWT cookies. |
+| `app/store/routes.py` | Storefront — home, product list/search, product detail, cart add/update/remove, checkout, order history. |
+| `app/admin/routes.py` | Admin panel — dashboard stats, product CRUD (+ image upload), order status updates, user enable/disable. Protected by `@admin_required`. |
+
+### Templates (`app/templates/`)
+
+| Path | Purpose |
+|------|---------|
+| `base.html` | Master layout: navbar (with cart badge), flash messages, footer, asset includes. |
+| `auth/login.html`, `register.html`, `profile.html` | Authentication pages. |
+| `store/index.html`, `products.html`, `product_detail.html` | Storefront pages with add-to-cart forms. |
+| `store/cart.html`, `checkout.html`, `orders.html`, `order_detail.html` | Cart and order pages. |
+| `admin/*.html` | Admin dashboard, product form, products/orders/users lists, order detail. |
+| `errors/403,404,429,500.html` | Friendly error pages. |
+
+### Static assets (`app/static/`)
+
+| Path | Purpose |
+|------|---------|
+| `css/style.css` | Storefront theme (dark UI, cards, navbar, cart badge). |
+| `css/admin.css` | Admin panel styling. |
+| `img/products/*.svg` | Bundled demo product images. |
+| `img/placeholder.png` | Fallback product image. |
+
+### Scripts (`scripts/`)
+
+| File | Purpose |
+|------|---------|
+| `seed_data.py` | Seeds the admin user, categories and 16 sample products (with image keys). |
+| `generate_images.py` | Generates the local product SVG images. |
+| `backup.sh` | Automated MySQL dump + S3 upload backup. |
+| `setup_server.sh` | EC2 provisioning (Docker, Nginx, Fail2ban, etc.). |
+
+### Infrastructure & DevOps
+
+| File | Purpose |
+|------|---------|
+| `docker/Dockerfile` | Production image build (Python + Gunicorn). |
+| `docker-compose.yml` | Local stack — app + MySQL + Nginx. |
+| `config/nginx.conf` | Reverse proxy, security headers, rate limiting. |
+| `jenkins/Jenkinsfile` | CI/CD pipeline (build → test → scan → deploy). |
+| `migrations/` | Alembic/Flask-Migrate database migrations. |
+| `tests/test_auth.py` | Pytest auth tests. |
+| `run.py` | App entry point (`create_app()` → `app.run`). |
+| `requirements.txt` | Python dependencies. |
+| `.env` / `.env.example` | Environment configuration (secrets, DB, AWS). |
 
 ---
 
@@ -166,7 +281,3 @@ docker exec ecommerce_app python -m pytest tests/ -v
 
 > **URL:** https://yourdomain.com  
 > **Admin Panel:** https://yourdomain.com/admin
-
----
-
-*IPSR Solutions Ltd – Capstone Project*

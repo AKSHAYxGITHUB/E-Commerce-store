@@ -28,7 +28,11 @@ class BaseConfig:
     JWT_COOKIE_SAMESITE = "Lax"
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=7)
-    JWT_COOKIE_CSRF_PROTECT = True
+    # CSRF for authenticated POSTs is handled by Flask-WTF (the `csrf_token`
+    # field present in every form) together with SameSite=Lax cookies. JWT's
+    # own header-based double-submit is left off so HTML form posts (add to
+    # cart, checkout, etc.) aren't rejected for a missing X-CSRF-TOKEN header.
+    JWT_COOKIE_CSRF_PROTECT = False
 
     # ── AWS / S3 ──────────────────────────────────────────────────────────────
     AWS_REGION = os.getenv("AWS_REGION", "ap-south-1")

@@ -44,6 +44,27 @@ def create_app(config_name: str = None):
     app.register_blueprint(store_bp, url_prefix="/")
     app.register_blueprint(admin_bp, url_prefix="/admin")
 
+    # ── Template globals ──────────────────────────────────────────────────────
+    @app.context_processor
+    def inject_cart_count():
+        """Total quantity of items in the current user's cart (for the navbar badge)."""
+        from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
+        from app.models import Cart
+        count = 0
+        try:
+            verify_jwt_in_request(optional=True, locations=["cookies"])
+            uid = get_jwt_identity()
+            if uid:
+                count = (
+                    db.session.query(db.func.coalesce(db.func.sum(Cart.quantity), 0))
+                    .filter(Cart.user_id == int(uid))
+                    .scalar()
+                    or 0
+                )
+        except Exception:
+            count = 0
+        return {"cart_count": int(count)}
+
     # ── Health check ──────────────────────────────────────────────────────────
     @app.route("/health")
     def health():
