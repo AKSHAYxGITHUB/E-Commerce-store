@@ -2,64 +2,60 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<!-- ── Hero ──────────────────────────────────────────────────────────────── -->
-<section class="hero-section">
-  <div class="container position-relative" style="z-index:1;">
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
     <div class="row align-items-center g-5">
-      <div class="col-lg-7 fade-in">
-        <div class="hero-badge">
+      <!-- Left -->
+      <div class="col-lg-6 fade-up">
+        <div class="hero-eyebrow">
           <i class="bi bi-shield-check-fill"></i> Secure & Fast Delivery
         </div>
-        <h1 class="hero-title">
-          Shop Smart.<br>Shop <span class="accent">Secure.</span>
-        </h1>
-        <p class="hero-subtitle">
+        <h1 class="hero-title">Shop Smart.<br>Shop <span class="hi">Secure.</span></h1>
+        <p class="hero-sub">
           Thousands of curated products across Electronics, Fashion, Home & more —
           delivered fast, secured by DevSecOps best practices on AWS.
         </p>
         <div class="d-flex flex-wrap gap-3 mt-4">
-          <a href="{{ url_for('store.products') }}" class="btn-hero-primary">
+          <a href="{{ url_for('store.products') }}" class="btn-primary-cta">
             <i class="bi bi-grid-3x3-gap-fill"></i> Browse Products
           </a>
           {% if not user %}
-          <a href="{{ url_for('auth.register') }}" class="btn-hero-secondary">
+          <a href="{{ url_for('auth.register') }}" class="btn-secondary-cta">
             <i class="bi bi-person-plus"></i> Create Account
           </a>
           {% endif %}
         </div>
         <div class="hero-stats">
           <div>
-            <span class="hero-stat-num">{{ featured|length }}+</span>
-            <div class="hero-stat-label">Products</div>
+            <div class="hero-stat-n">{{ featured|length }}+</div>
+            <div class="hero-stat-l">Products</div>
           </div>
           <div>
-            <span class="hero-stat-num">{{ categories|length }}</span>
-            <div class="hero-stat-label">Categories</div>
+            <div class="hero-stat-n">{{ categories|length }}</div>
+            <div class="hero-stat-l">Categories</div>
           </div>
           <div>
-            <span class="hero-stat-num">24h</span>
-            <div class="hero-stat-label">Fast Dispatch</div>
+            <div class="hero-stat-n">24h</div>
+            <div class="hero-stat-l">Fast Dispatch</div>
           </div>
         </div>
       </div>
 
-      <!-- Feature cards on right -->
-      <div class="col-lg-5 d-none d-lg-flex flex-column gap-3 fade-in" style="animation-delay:0.15s;">
-        {% set icons = ['bi-lightning-charge-fill','bi-shield-fill-check','bi-truck','bi-arrow-counterclockwise'] %}
-        {% set feats = [
-          ('Fast Delivery','Same-day dispatch on thousands of items.'),
-          ('Secure Checkout','JWT auth, bcrypt, and WAF protection.'),
-          ('Free Shipping','On orders above ₹999.'),
-          ('Easy Returns','30-day hassle-free returns.')
+      <!-- Right — feature cards -->
+      <div class="col-lg-6 d-none d-lg-flex flex-column gap-3 fade-up" style="animation-delay:.15s">
+        {% set fc = [
+          ('bi-lightning-charge-fill','Fast Delivery','Same-day dispatch on thousands of items.'),
+          ('bi-shield-fill-check','Secure Checkout','JWT auth, bcrypt, and AWS WAF protection.'),
+          ('bi-truck','Free Shipping','Free on orders above ₹999.'),
+          ('bi-arrow-counterclockwise','Easy Returns','30-day hassle-free returns.')
         ] %}
-        {% for ic, (title, desc) in zip(icons, feats) if loop.index <= 4 %}
-        <div class="d-flex gap-3 align-items-start" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:1rem 1.2rem;">
-          <div style="width:40px;height:40px;background:rgba(255,193,7,0.12);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <i class="bi {{ ic }}" style="color:#ffc107;font-size:1.1rem;"></i>
-          </div>
+        {% for icon, title, desc in fc %}
+        <div class="feat-card">
+          <div class="feat-icon"><i class="bi {{ icon }}"></i></div>
           <div>
-            <div style="font-weight:700;font-size:0.9rem;color:#f0f0f5;">{{ title }}</div>
-            <div style="font-size:0.8rem;color:rgba(240,240,245,0.45);margin-top:0.15rem;">{{ desc }}</div>
+            <div class="feat-title">{{ title }}</div>
+            <div class="feat-desc">{{ desc }}</div>
           </div>
         </div>
         {% endfor %}
@@ -68,95 +64,83 @@
   </div>
 </section>
 
-<!-- ── Category Chips ────────────────────────────────────────────────────── -->
+<!-- CATEGORY BAR -->
 {% if categories %}
-<section class="category-section">
+<div class="cat-bar">
   <div class="container">
     <div class="d-flex flex-wrap gap-2 justify-content-center">
-      <a href="{{ url_for('store.products') }}" class="category-chip">
-        <i class="bi bi-grid"></i> All
+      <a href="{{ url_for('store.products') }}" class="cat-chip">
+        <i class="bi bi-grid-3x3"></i> All
       </a>
       {% for cat in categories %}
-      <a href="{{ url_for('store.products', category=cat.slug) }}" class="category-chip">
+      <a href="{{ url_for('store.products', category=cat.slug) }}" class="cat-chip">
         {{ cat.name }}
       </a>
       {% endfor %}
     </div>
   </div>
-</section>
+</div>
 {% endif %}
 
-<!-- ── Latest Products ───────────────────────────────────────────────────── -->
-<section class="container py-5">
+<!-- PRODUCTS -->
+<div class="container" style="padding-top:3rem;padding-bottom:3rem;">
   <div class="d-flex justify-content-between align-items-end mb-4">
     <div>
-      <h2 class="section-title">Latest Products</h2>
-      <p class="section-subtitle mt-1">Freshly added to our catalogue</p>
+      <h2 class="sec-title">Latest Products</h2>
+      <p class="sec-sub">Freshly added to our catalogue</p>
     </div>
-    <a href="{{ url_for('store.products') }}" class="btn btn-sm btn-warning fw-bold">
-      View All <i class="bi bi-arrow-right ms-1"></i>
+    <a href="{{ url_for('store.products') }}"
+       style="font-size:.85rem;font-weight:700;color:#ffc107;text-decoration:none;">
+      View all <i class="bi bi-arrow-right ms-1"></i>
     </a>
   </div>
 
-  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-4 g-4">
+  <div class="row row-cols-2 row-cols-md-3 row-cols-xl-4 g-3">
     {% for product in featured %}
-    <div class="col fade-in" style="animation-delay:{{ loop.index0 * 0.06 }}s;">
-      <div class="card h-100 border-0 product-card">
-        <a href="{{ url_for('store.product_detail', product_id=product.id) }}" tabindex="-1">
-          <img src="{{ product.image_url }}"
-               class="card-img-top product-img"
-               alt="{{ product.name }}"
-               onerror="this.src='/static/img/placeholder.png'" />
+    <div class="col fade-up" style="animation-delay:{{ loop.index0 * 0.06 }}s;">
+      <div class="p-card">
+        <a href="{{ url_for('store.product_detail', product_id=product.id) }}">
+          <img class="p-card-img" src="{{ product.image_url }}" alt="{{ product.name }}"
+               onerror="this.src='/static/img/placeholder.png'"/>
         </a>
-        <div class="card-body d-flex flex-column p-3">
-          <p class="product-category-badge mb-1">
-            {{ product.category.name if product.category else 'General' }}
-          </p>
+        <div class="p-card-body">
+          <div class="p-cat">{{ product.category.name if product.category else 'General' }}</div>
           <a href="{{ url_for('store.product_detail', product_id=product.id) }}"
-             class="product-title mb-2">{{ product.name }}</a>
-          <div class="mt-auto">
-            <p class="product-price mb-2">₹{{ "%.0f"|format(product.price) }}</p>
-            {% if product.in_stock %}
-            <form method="POST" action="{{ url_for('store.cart_add') }}">
-              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-              <input type="hidden" name="product_id" value="{{ product.id }}" />
-              <input type="hidden" name="quantity" value="1" />
-              <button type="submit" class="btn-add-cart">
-                <i class="bi bi-cart-plus me-1"></i> Add to Cart
-              </button>
-            </form>
-            {% else %}
-            <button class="btn-out-of-stock" disabled>Out of Stock</button>
-            {% endif %}
-          </div>
+             class="p-name">{{ product.name }}</a>
+          <div class="p-price">₹{{ "%.0f"|format(product.price) }}</div>
+          {% if product.in_stock %}
+          <form method="POST" action="{{ url_for('store.cart_add') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <input type="hidden" name="product_id" value="{{ product.id }}"/>
+            <input type="hidden" name="quantity" value="1"/>
+            <button type="submit" class="btn-atc"><i class="bi bi-cart-plus me-1"></i>Add to Cart</button>
+          </form>
+          {% else %}
+          <button class="btn-oos" disabled>Out of Stock</button>
+          {% endif %}
         </div>
       </div>
     </div>
     {% else %}
     <div class="col-12 text-center py-5">
-      <i class="bi bi-box-seam" style="font-size:3rem;color:rgba(255,255,255,0.1);"></i>
-      <p class="text-muted mt-3">No products yet. Check back soon!</p>
+      <i class="bi bi-box-seam" style="font-size:3rem;color:rgba(255,255,255,.1);"></i>
+      <p style="color:rgba(232,234,240,.4);margin-top:1rem;">No products yet.</p>
     </div>
     {% endfor %}
   </div>
-</section>
+</div>
 
-<!-- ── Trust Banner ──────────────────────────────────────────────────────── -->
-<section style="background:#141420;border-top:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06);padding:2.5rem 0;">
+<!-- TRUST BAR -->
+<div class="trust-bar">
   <div class="container">
-    <div class="row g-4 text-center">
-      {% for icon, label in [
-        ('bi-shield-lock-fill','100% Secure'),
-        ('bi-truck','Fast Shipping'),
-        ('bi-headset','24/7 Support'),
-        ('bi-arrow-repeat','Easy Returns')
-      ] %}
-      <div class="col-6 col-md-3">
-        <i class="bi {{ icon }}" style="font-size:1.8rem;color:#ffc107;"></i>
-        <div style="font-weight:700;font-size:0.9rem;color:#f0f0f5;margin-top:0.5rem;">{{ label }}</div>
+    <div class="row g-3">
+      {% for icon, label in [('bi-shield-lock-fill','100% Secure'),('bi-truck','Fast Shipping'),('bi-headset','24/7 Support'),('bi-arrow-repeat','Easy Returns')] %}
+      <div class="col-6 col-md-3 trust-item">
+        <i class="bi {{ icon }}"></i>
+        <div class="trust-label">{{ label }}</div>
       </div>
       {% endfor %}
     </div>
   </div>
-</section>
+</div>
 {% endblock %}

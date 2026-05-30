@@ -2,101 +2,85 @@
 {% block title %}{{ product.name }}{% endblock %}
 
 {% block content %}
-<div class="container py-5">
+<div class="container" style="padding-top:2.5rem;padding-bottom:3rem;">
+
   <!-- Breadcrumb -->
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{{ url_for('store.index') }}">Home</a></li>
-      <li class="breadcrumb-item"><a href="{{ url_for('store.products') }}">Products</a></li>
+  <nav aria-label="breadcrumb" style="margin-bottom:2rem;">
+    <ol class="breadcrumb d-flex gap-2 align-items-center p-0 m-0 list-unstyled" style="flex-wrap:wrap;">
+      <li class="bc-item"><a href="{{ url_for('store.index') }}">Home</a></li>
+      <li class="bc-sep">/</li>
+      <li class="bc-item"><a href="{{ url_for('store.products') }}">Products</a></li>
       {% if product.category %}
-      <li class="breadcrumb-item">
-        <a href="{{ url_for('store.products', category=product.category.slug) }}">{{ product.category.name }}</a>
-      </li>
+      <li class="bc-sep">/</li>
+      <li class="bc-item"><a href="{{ url_for('store.products', category=product.category.slug) }}">{{ product.category.name }}</a></li>
       {% endif %}
-      <li class="breadcrumb-item active">{{ product.name }}</li>
+      <li class="bc-sep">/</li>
+      <li class="bc-item cur">{{ product.name[:40] }}{% if product.name|length > 40 %}…{% endif %}</li>
     </ol>
   </nav>
 
-  <div class="row g-5 mt-1">
+  <div class="row g-5">
     <!-- Image -->
     <div class="col-md-5">
-      <div class="detail-image-wrap">
-        <img src="{{ product.image_url }}"
-             alt="{{ product.name }}"
-             onerror="this.src='/static/img/placeholder.png'" />
+      <div class="detail-img-box">
+        <img src="{{ product.image_url }}" alt="{{ product.name }}"
+             onerror="this.src='/static/img/placeholder.png'"/>
       </div>
     </div>
 
-    <!-- Details -->
+    <!-- Info -->
     <div class="col-md-7">
       {% if product.category %}
-      <span class="detail-badge">{{ product.category.name }}</span>
+      <div class="detail-cat-tag">{{ product.category.name }}</div>
       {% endif %}
 
-      <h1 class="detail-title mt-1">{{ product.name }}</h1>
-      <div class="detail-price mt-2 mb-3">₹{{ "%.0f"|format(product.price) }}</div>
+      <h1 class="detail-title">{{ product.name }}</h1>
+      <div class="detail-price">₹{{ "%.0f"|format(product.price) }}</div>
       <p class="detail-desc">{{ product.description }}</p>
 
-      <hr style="border-color:rgba(255,255,255,0.07);margin:1.5rem 0;">
+      <hr style="border-color:rgba(255,255,255,.07);margin:1.4rem 0;">
 
       {% if product.in_stock %}
-      <p class="detail-stock-ok mb-3">
-        <i class="bi bi-check-circle-fill me-1"></i>
-        In Stock &mdash; {{ product.stock }} available
+      <p class="stock-ok mb-3">
+        <i class="bi bi-check-circle-fill me-1"></i>In Stock — {{ product.stock }} available
       </p>
-      <form method="POST" action="{{ url_for('store.cart_add') }}"
-            class="d-flex align-items-center gap-3">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-        <input type="hidden" name="product_id" value="{{ product.id }}" />
-        <input type="number" name="quantity" value="1"
-               min="1" max="{{ product.stock }}"
-               class="qty-input" />
-        <button type="submit" class="btn btn-warning fw-bold px-4 py-2"
-                style="border-radius:12px;font-size:0.95rem;">
+      <form class="d-flex align-items-center gap-3" method="POST" action="{{ url_for('store.cart_add') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <input type="hidden" name="product_id" value="{{ product.id }}"/>
+        <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" class="qty-box"/>
+        <button type="submit" class="btn-main-cta">
           <i class="bi bi-cart-plus me-1"></i> Add to Cart
         </button>
       </form>
       {% else %}
-      <p class="detail-stock-na">
-        <i class="bi bi-x-circle-fill me-1"></i> Out of Stock
-      </p>
+      <p class="stock-no"><i class="bi bi-x-circle-fill me-1"></i>Out of Stock</p>
       {% endif %}
 
-      <!-- Tags -->
       <div class="d-flex flex-wrap gap-2 mt-4">
-        <span style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:0.3rem 0.75rem;font-size:0.78rem;color:rgba(240,240,245,0.5);">
-          <i class="bi bi-shield-check me-1 text-amber"></i> Secure Payment
-        </span>
-        <span style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:0.3rem 0.75rem;font-size:0.78rem;color:rgba(240,240,245,0.5);">
-          <i class="bi bi-truck me-1 text-amber"></i> Fast Delivery
-        </span>
-        <span style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:0.3rem 0.75rem;font-size:0.78rem;color:rgba(240,240,245,0.5);">
-          <i class="bi bi-arrow-repeat me-1 text-amber"></i> Easy Returns
-        </span>
+        <span class="info-pill"><i class="bi bi-shield-check"></i> Secure Payment</span>
+        <span class="info-pill"><i class="bi bi-truck"></i> Fast Delivery</span>
+        <span class="info-pill"><i class="bi bi-arrow-repeat"></i> Easy Returns</span>
       </div>
     </div>
   </div>
 
-  <!-- Related Products -->
+  <!-- Related -->
   {% if related %}
-  <div class="mt-6" style="margin-top:4rem;">
-    <h2 class="section-title mb-1">Related Products</h2>
-    <p class="section-subtitle mb-4">You might also like</p>
+  <div style="margin-top:4rem;">
+    <h2 class="sec-title mb-1">Related Products</h2>
+    <p class="sec-sub mb-4">You might also like</p>
     <div class="row row-cols-2 row-cols-md-4 g-3">
       {% for p in related %}
       <div class="col">
-        <div class="card h-100 border-0 product-card">
-          <a href="{{ url_for('store.product_detail', product_id=p.id) }}" tabindex="-1">
-            <img src="{{ p.image_url }}"
-                 class="card-img-top product-img"
-                 alt="{{ p.name }}"
-                 onerror="this.src='/static/img/placeholder.png'"
-                 style="height:150px;" />
+        <div class="p-card">
+          <a href="{{ url_for('store.product_detail', product_id=p.id) }}">
+            <img class="p-card-img" src="{{ p.image_url }}" alt="{{ p.name }}"
+                 onerror="this.src='/static/img/placeholder.png'" style="height:150px;"/>
           </a>
-          <div class="card-body p-3">
+          <div class="p-card-body">
             <a href="{{ url_for('store.product_detail', product_id=p.id) }}"
-               class="product-title" style="-webkit-line-clamp:1;">{{ p.name }}</a>
-            <p class="product-price mt-1 mb-0" style="font-size:1rem;">₹{{ "%.0f"|format(p.price) }}</p>
+               class="p-name" style="-webkit-line-clamp:1;">{{ p.name }}</a>
+            <div class="p-price" style="font-size:.95rem;">₹{{ "%.0f"|format(p.price) }}</div>
           </div>
         </div>
       </div>
@@ -104,5 +88,6 @@
     </div>
   </div>
   {% endif %}
+
 </div>
 {% endblock %}

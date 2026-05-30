@@ -2,111 +2,104 @@
 {% block title %}Products{% endblock %}
 
 {% block content %}
-<div class="container py-4">
+<div class="container" style="padding-top:2rem;padding-bottom:3rem;">
   <div class="row g-4">
 
-    <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+    <!-- Sidebar -->
     <div class="col-lg-2 col-md-3">
-      <div class="sidebar">
-        <div class="sidebar-title">Categories</div>
+      <div class="sidebar-box">
+        <div class="sidebar-head">Categories</div>
         <a href="{{ url_for('store.products') }}"
-           class="sidebar-link {{ 'active' if not current_category }}">
-          <i class="bi bi-grid me-2"></i>All Products
+           class="s-link {{ 'on' if not current_category }}">
+          <i class="bi bi-grid"></i> All
         </a>
         {% for cat in categories %}
         <a href="{{ url_for('store.products', category=cat.slug) }}"
-           class="sidebar-link {{ 'active' if current_category == cat.slug }}">
-          <i class="bi bi-tag me-2"></i>{{ cat.name }}
+           class="s-link {{ 'on' if current_category == cat.slug }}">
+          <i class="bi bi-tag"></i> {{ cat.name }}
         </a>
         {% endfor %}
       </div>
     </div>
 
-    <!-- ── Products Grid ─────────────────────────────────────────────────── -->
+    <!-- Grid -->
     <div class="col-lg-10 col-md-9">
-      <!-- Header row -->
-      <div class="d-flex justify-content-between align-items-center mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
-          <h1 class="section-title">
+          <h1 class="sec-title">
             {% if search_query %}Results for "{{ search_query }}"
             {% elif current_category %}{{ current_category|title }}
             {% else %}All Products{% endif %}
           </h1>
-          <p class="section-subtitle mt-1">{{ pagination.total }} item{{ 's' if pagination.total != 1 }}</p>
+          <p class="sec-sub">{{ pagination.total }} item{{ 's' if pagination.total != 1 }}</p>
         </div>
         {% if search_query or current_category %}
-        <a href="{{ url_for('store.products') }}" class="btn btn-sm" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:rgba(240,240,245,0.6);border-radius:8px;">
-          <i class="bi bi-x me-1"></i> Clear
+        <a href="{{ url_for('store.products') }}"
+           style="font-size:.82rem;font-weight:600;color:rgba(232,234,240,.5);text-decoration:none;
+                  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);
+                  border-radius:8px;padding:.32rem .75rem;">
+          <i class="bi bi-x me-1"></i>Clear
         </a>
         {% endif %}
       </div>
 
-      <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-4">
+      <div class="row row-cols-2 row-cols-md-3 row-cols-xl-4 g-3">
         {% for product in products %}
-        <div class="col fade-in" style="animation-delay:{{ loop.index0 * 0.05 }}s;">
-          <div class="card h-100 border-0 product-card">
-            <a href="{{ url_for('store.product_detail', product_id=product.id) }}" tabindex="-1">
-              <img src="{{ product.image_url }}"
-                   class="card-img-top product-img"
-                   alt="{{ product.name }}"
-                   onerror="this.src='/static/img/placeholder.png'" />
+        <div class="col fade-up" style="animation-delay:{{ loop.index0 * 0.04 }}s;">
+          <div class="p-card">
+            <a href="{{ url_for('store.product_detail', product_id=product.id) }}">
+              <img class="p-card-img" src="{{ product.image_url }}" alt="{{ product.name }}"
+                   onerror="this.src='/static/img/placeholder.png'"/>
             </a>
-            <div class="card-body d-flex flex-column p-3">
-              <p class="product-category-badge mb-1">
-                {{ product.category.name if product.category else '—' }}
-              </p>
+            <div class="p-card-body">
+              <div class="p-cat">{{ product.category.name if product.category else '—' }}</div>
               <a href="{{ url_for('store.product_detail', product_id=product.id) }}"
-                 class="product-title mb-2">{{ product.name }}</a>
-              <div class="mt-auto">
-                <p class="product-price mb-2">₹{{ "%.0f"|format(product.price) }}</p>
-                {% if product.in_stock %}
-                <form method="POST" action="{{ url_for('store.cart_add') }}">
-                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-                  <input type="hidden" name="product_id" value="{{ product.id }}" />
-                  <input type="hidden" name="quantity" value="1" />
-                  <button type="submit" class="btn-add-cart">
-                    <i class="bi bi-cart-plus me-1"></i> Add to Cart
-                  </button>
-                </form>
-                {% else %}
-                <button class="btn-out-of-stock" disabled>Out of Stock</button>
-                {% endif %}
-              </div>
+                 class="p-name">{{ product.name }}</a>
+              <div class="p-price">₹{{ "%.0f"|format(product.price) }}</div>
+              {% if product.in_stock %}
+              <form method="POST" action="{{ url_for('store.cart_add') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <input type="hidden" name="product_id" value="{{ product.id }}"/>
+                <input type="hidden" name="quantity" value="1"/>
+                <button type="submit" class="btn-atc"><i class="bi bi-cart-plus me-1"></i>Add to Cart</button>
+              </form>
+              {% else %}
+              <button class="btn-oos" disabled>Out of Stock</button>
+              {% endif %}
             </div>
           </div>
         </div>
         {% else %}
         <div class="col-12 text-center py-5">
-          <i class="bi bi-search" style="font-size:3rem;color:rgba(255,255,255,0.1);"></i>
-          <p class="text-muted mt-3">No products found.</p>
-          <a href="{{ url_for('store.products') }}" class="btn btn-sm btn-warning mt-2">Clear filters</a>
+          <i class="bi bi-search" style="font-size:3rem;color:rgba(255,255,255,.1);"></i>
+          <p style="color:rgba(232,234,240,.4);margin-top:1rem;">No products found.</p>
         </div>
         {% endfor %}
       </div>
 
       <!-- Pagination -->
       {% if pagination.pages > 1 %}
-      <nav class="mt-5">
-        <ul class="pagination justify-content-center">
+      <nav style="margin-top:2.5rem;">
+        <ul class="pag">
           {% if pagination.has_prev %}
-          <li class="page-item">
-            <a class="page-link" href="{{ url_for('store.products', page=pagination.prev_num, category=current_category, q=search_query) }}">
+          <li class="pag-item">
+            <a href="{{ url_for('store.products', page=pagination.prev_num, category=current_category, q=search_query) }}">
               <i class="bi bi-chevron-left"></i>
             </a>
           </li>
           {% endif %}
-          {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+          {% for p in pagination.iter_pages(left_edge=1,right_edge=1,left_current=2,right_current=2) %}
             {% if p %}
-            <li class="page-item {{ 'active' if p == pagination.page }}">
-              <a class="page-link" href="{{ url_for('store.products', page=p, category=current_category, q=search_query) }}">{{ p }}</a>
+            <li class="pag-item {{ 'on' if p == pagination.page }}">
+              <a href="{{ url_for('store.products', page=p, category=current_category, q=search_query) }}">{{ p }}</a>
             </li>
             {% else %}
-            <li class="page-item disabled"><span class="page-link">…</span></li>
+            <li class="pag-item off"><span>…</span></li>
             {% endif %}
           {% endfor %}
           {% if pagination.has_next %}
-          <li class="page-item">
-            <a class="page-link" href="{{ url_for('store.products', page=pagination.next_num, category=current_category, q=search_query) }}">
+          <li class="pag-item">
+            <a href="{{ url_for('store.products', page=pagination.next_num, category=current_category, q=search_query) }}">
               <i class="bi bi-chevron-right"></i>
             </a>
           </li>

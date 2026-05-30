@@ -3,329 +3,132 @@
 
 {% block head %}
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
-  body {
-    font-family: 'Inter', system-ui, sans-serif;
-    background: #0f0f14;
-    min-height: 100vh;
-  }
-
-  .login-page {
-    min-height: calc(100vh - 72px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
+  .login-wrap {
+    min-height: calc(100vh - 68px);
+    display: flex; align-items: center; justify-content: center;
     padding: 2rem 1rem;
-    background: linear-gradient(135deg, #0f0f14 0%, #1a1a2e 50%, #16213e 100%);
+    background: linear-gradient(135deg,#0f1117 0%,#161826 55%,#12172a 100%);
+    position: relative; overflow: hidden;
   }
-
-  /* Animated glowing orbs */
-  .login-page::before {
-    content: '';
-    position: absolute;
-    top: -20%;
-    left: -10%;
-    width: 500px;
-    height: 500px;
-    background: radial-gradient(circle, rgba(255,193,7,0.15) 0%, transparent 70%);
-    border-radius: 50%;
-    animation: floatOrb 8s ease-in-out infinite;
-    pointer-events: none;
+  .login-wrap::before {
+    content:''; position:absolute; top:-120px; right:-80px;
+    width:480px; height:480px;
+    background:radial-gradient(circle,rgba(255,193,7,.09) 0%,transparent 65%);
+    border-radius:50%; pointer-events:none;
   }
-
-  .login-page::after {
-    content: '';
-    position: absolute;
-    bottom: -20%;
-    right: -10%;
-    width: 400px;
-    height: 400px;
-    background: radial-gradient(circle, rgba(99,102,241,0.2) 0%, transparent 70%);
-    border-radius: 50%;
-    animation: floatOrb 10s ease-in-out infinite reverse;
-    pointer-events: none;
+  .login-wrap::after {
+    content:''; position:absolute; bottom:-100px; left:-60px;
+    width:380px; height:380px;
+    background:radial-gradient(circle,rgba(99,102,241,.12) 0%,transparent 65%);
+    border-radius:50%; pointer-events:none;
   }
-
-  @keyframes floatOrb {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    33%       { transform: translate(30px, -20px) scale(1.05); }
-    66%       { transform: translate(-20px, 15px) scale(0.95); }
-  }
-
   .login-card {
-    background: rgba(255,255,255,0.04);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 24px;
-    padding: 2.5rem 2.5rem;
-    width: 100%;
-    max-width: 440px;
-    position: relative;
-    z-index: 1;
-    box-shadow: 0 25px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
-    animation: slideUp 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+    background: rgba(26,29,46,.9);
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: 22px; padding: 2.4rem 2.2rem;
+    width: 100%; max-width: 420px;
+    position: relative; z-index: 1;
+    box-shadow: 0 24px 64px rgba(0,0,0,.5);
+    animation: popIn .45s cubic-bezier(.34,1.56,.64,1) both;
   }
-
-  @keyframes slideUp {
-    from { opacity: 0; transform: translateY(40px) scale(0.96); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
+  @keyframes popIn {
+    from { opacity:0; transform:translateY(30px) scale(.96); }
+    to   { opacity:1; transform:translateY(0) scale(1); }
   }
-
   .login-logo {
-    width: 56px;
-    height: 56px;
-    background: linear-gradient(135deg, #ffc107, #ff9800);
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.6rem;
-    margin: 0 auto 1.2rem;
-    box-shadow: 0 8px 24px rgba(255,193,7,0.35);
-    animation: pulse 3s ease-in-out infinite;
+    width:52px; height:52px; border-radius:14px;
+    background:linear-gradient(135deg,#ffc107,#ff9800);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.5rem; margin:0 auto 1.2rem;
+    box-shadow: 0 6px 20px rgba(255,193,7,.35);
   }
-
-  @keyframes pulse {
-    0%, 100% { box-shadow: 0 8px 24px rgba(255,193,7,0.35); }
-    50%       { box-shadow: 0 8px 36px rgba(255,193,7,0.55); }
-  }
-
   .login-title {
-    font-size: 1.75rem;
-    font-weight: 800;
-    color: #ffffff;
-    text-align: center;
-    margin-bottom: 0.3rem;
-    letter-spacing: -0.5px;
+    font-size:1.65rem; font-weight:800; color:#e8eaf0;
+    text-align:center; letter-spacing:-.5px; margin-bottom:.3rem;
   }
-
-  .login-subtitle {
-    text-align: center;
-    color: rgba(255,255,255,0.45);
-    font-size: 0.875rem;
-    margin-bottom: 2rem;
+  .login-sub { text-align:center; font-size:.83rem; color:rgba(232,234,240,.4); margin-bottom:1.8rem; }
+  .login-label { font-size:.76rem; font-weight:700; color:rgba(232,234,240,.55); letter-spacing:.3px; text-transform:uppercase; margin-bottom:.38rem; display:block; }
+  .login-field {
+    width:100%; background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.1);
+    border-radius:11px; color:#e8eaf0;
+    padding:.68rem 1rem; font-size:.92rem;
+    transition:border-color .2s, box-shadow .2s;
   }
-
-  /* Divider */
-  .login-divider {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
+  .login-field::placeholder { color:rgba(232,234,240,.25); }
+  .login-field:focus { outline:none; border-color:#ffc107; box-shadow:0 0 0 3px rgba(255,193,7,.14); background:rgba(255,255,255,.08); }
+  .login-field-pw { padding-right:2.8rem; }
+  .pw-wrap { position:relative; }
+  .pw-eye {
+    position:absolute; right:.8rem; top:50%; transform:translateY(-50%);
+    background:none; border:none; color:rgba(232,234,240,.38); cursor:pointer;
+    padding:0; font-size:1rem; line-height:1; transition:color .2s;
   }
-  .login-divider::before, .login-divider::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: rgba(255,255,255,0.1);
-  }
-  .login-divider span {
-    color: rgba(255,255,255,0.3);
-    font-size: 0.75rem;
-    white-space: nowrap;
-  }
-
-  /* Form fields */
-  .form-label-custom {
-    color: rgba(255,255,255,0.7);
-    font-size: 0.8rem;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    margin-bottom: 0.4rem;
-  }
-
-  .form-control-custom {
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 12px;
-    color: #ffffff;
-    padding: 0.75rem 1rem;
-    font-size: 0.95rem;
-    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-    width: 100%;
-  }
-
-  .form-control-custom::placeholder { color: rgba(255,255,255,0.25); }
-  .form-control-custom:focus {
-    background: rgba(255,255,255,0.09);
-    border-color: #ffc107;
-    box-shadow: 0 0 0 3px rgba(255,193,7,0.15);
-    outline: none;
-    color: #ffffff;
-  }
-
-  .input-wrapper {
-    position: relative;
-  }
-
-  .input-icon {
-    position: absolute;
-    left: 0.9rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: rgba(255,255,255,0.35);
-    font-size: 1rem;
-    pointer-events: none;
-  }
-
-  .form-control-custom.has-icon { padding-left: 2.6rem; }
-
-  .pw-toggle {
-    position: absolute;
-    right: 0.75rem;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    color: rgba(255,255,255,0.4);
-    cursor: pointer;
-    padding: 0.2rem;
-    transition: color 0.2s;
-    line-height: 1;
-  }
-  .pw-toggle:hover { color: #ffc107; }
-
-  /* Submit button */
+  .pw-eye:hover { color:#ffc107; }
   .btn-login {
-    width: 100%;
-    padding: 0.85rem;
-    border-radius: 12px;
-    font-weight: 700;
-    font-size: 1rem;
-    letter-spacing: 0.3px;
-    border: none;
-    background: linear-gradient(135deg, #ffc107, #ff9800);
-    color: #0f0f14;
-    cursor: pointer;
-    transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
-    box-shadow: 0 4px 20px rgba(255,193,7,0.35);
-    margin-top: 0.5rem;
+    width:100%; background:linear-gradient(135deg,#ffc107,#ff9800);
+    border:none; border-radius:11px; color:#0f1117;
+    font-weight:800; font-size:.98rem; padding:.75rem;
+    cursor:pointer; margin-top:.5rem;
+    transition:transform .15s, box-shadow .15s;
   }
-  .btn-login:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(255,193,7,0.5);
-    opacity: 0.95;
+  .btn-login:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(255,193,7,.4); }
+  .login-register { text-align:center; font-size:.84rem; color:rgba(232,234,240,.4); margin-top:1.4rem; }
+  .login-register a { color:#ffc107; font-weight:700; text-decoration:none; }
+  .login-register a:hover { text-decoration:underline; }
+  .demo-hint {
+    background:rgba(255,193,7,.07); border:1px dashed rgba(255,193,7,.25);
+    border-radius:11px; padding:.75rem 1rem;
+    text-align:center; font-size:.78rem; color:rgba(232,234,240,.5);
+    margin-top:1.4rem; cursor:pointer; transition:background .2s;
   }
-  .btn-login:active { transform: translateY(0); }
-
-  .register-link {
-    text-align: center;
-    margin-top: 1.5rem;
-    color: rgba(255,255,255,0.4);
-    font-size: 0.875rem;
-  }
-  .register-link a {
-    color: #ffc107;
-    font-weight: 600;
-    text-decoration: none;
-    transition: color 0.2s;
-  }
-  .register-link a:hover { color: #ffdb65; text-decoration: underline; }
-
-  /* Demo credentials box */
-  .demo-box {
-    background: rgba(255,193,7,0.08);
-    border: 1px dashed rgba(255,193,7,0.3);
-    border-radius: 12px;
-    padding: 0.85rem 1rem;
-    margin-top: 1.5rem;
-    font-size: 0.8rem;
-    color: rgba(255,255,255,0.55);
-    text-align: center;
-    animation: slideUp 0.5s 0.2s cubic-bezier(0.34,1.56,0.64,1) both;
-  }
-  .demo-box strong { color: #ffc107; }
-
-  /* Flash messages override for dark bg */
-  .alert-danger {
-    background: rgba(220,53,69,0.15);
-    border: 1px solid rgba(220,53,69,0.4);
-    color: #ff8a8a;
-    border-radius: 10px;
-  }
+  .demo-hint:hover { background:rgba(255,193,7,.12); }
+  .demo-hint strong { color:#ffc107; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="login-page">
-  <div class="login-card">
-    <!-- Logo -->
-    <div class="login-logo">🛒</div>
+<div class="login-wrap">
+  <div>
+    <div class="login-card">
+      <div class="login-logo">🛒</div>
+      <h1 class="login-title">Welcome back</h1>
+      <p class="login-sub">Sign in to your ShopSecure account</p>
 
-    <h1 class="login-title">Welcome back</h1>
-    <p class="login-subtitle">Sign in to your ShopSecure account</p>
+      <form method="POST" action="{{ url_for('auth.login') }}" novalidate id="loginForm">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
-    <!-- Flash messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% for category, message in messages %}
-        <div class="alert alert-{{ category }} alert-dismissible fade show mb-3 py-2" role="alert" style="font-size:0.85rem">
-          <i class="bi bi-exclamation-triangle-fill me-1"></i> {{ message }}
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" style="font-size:0.7rem"></button>
+        <div style="margin-bottom:1rem;">
+          <label class="login-label" for="lemail">Email</label>
+          <input id="lemail" type="email" name="email" class="login-field"
+                 placeholder="you@example.com"
+                 value="{{ email|default('') }}" required autocomplete="email"/>
         </div>
-      {% endfor %}
-    {% endwith %}
 
-    <form method="POST" action="{{ url_for('auth.login') }}" novalidate id="loginForm">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-
-      <!-- Email -->
-      <div class="mb-3">
-        <label class="form-label-custom" for="email">Email address</label>
-        <div class="input-wrapper">
-          <i class="bi bi-envelope-fill input-icon"></i>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            class="form-control-custom has-icon"
-            placeholder="you@example.com"
-            value="{{ email|default('') }}"
-            required
-            autocomplete="email"
-          />
+        <div style="margin-bottom:1rem;">
+          <label class="login-label" for="lpw">Password</label>
+          <div class="pw-wrap">
+            <input id="lpw" type="password" name="password"
+                   class="login-field login-field-pw"
+                   placeholder="Your password" required autocomplete="current-password"/>
+            <button type="button" class="pw-eye" id="pwToggle">
+              <i class="bi bi-eye" id="pwIcon"></i>
+            </button>
+          </div>
         </div>
+
+        <button type="submit" class="btn-login" id="loginBtn">
+          <i class="bi bi-box-arrow-in-right me-1"></i> Sign In
+        </button>
+      </form>
+
+      <p class="login-register">
+        Don't have an account? <a href="{{ url_for('auth.register') }}">Create one free</a>
+      </p>
+
+      <div class="demo-hint" id="demoHint" title="Click to auto-fill">
+        <strong>🔑 Demo Admin:</strong> admin@store.com / Admin@123456
       </div>
-
-      <!-- Password -->
-      <div class="mb-3">
-        <label class="form-label-custom" for="pw">Password</label>
-        <div class="input-wrapper">
-          <i class="bi bi-lock-fill input-icon"></i>
-          <input
-            type="password"
-            id="pw"
-            name="password"
-            class="form-control-custom has-icon"
-            placeholder="Your password"
-            required
-            autocomplete="current-password"
-            style="padding-right: 2.8rem;"
-          />
-          <button type="button" class="pw-toggle" id="togglePw" aria-label="Toggle password visibility">
-            <i class="bi bi-eye" id="pwIcon"></i>
-          </button>
-        </div>
-      </div>
-
-      <button type="submit" class="btn-login" id="loginBtn">
-        <i class="bi bi-box-arrow-in-right me-1"></i> Sign In
-      </button>
-    </form>
-
-    <p class="register-link">
-      Don't have an account? <a href="{{ url_for('auth.register') }}">Create one free</a>
-    </p>
-  </div>
-
-  <!-- Demo credentials -->
-  <div style="position:absolute; bottom: 1.5rem; left: 50%; transform: translateX(-50%); z-index:2; width: 100%; max-width: 440px; padding: 0 1rem;">
-    <div class="demo-box">
-      <strong>🔑 Demo Admin:</strong>&nbsp; admin@store.com &nbsp;/&nbsp; Admin@123456
     </div>
   </div>
 </div>
@@ -334,30 +137,26 @@
 {% block scripts %}
 <script>
   // Toggle password visibility
-  const toggleBtn = document.getElementById('togglePw');
-  const pwField   = document.getElementById('pw');
-  const pwIcon    = document.getElementById('pwIcon');
-
-  toggleBtn.addEventListener('click', function () {
-    const isPassword = pwField.type === 'password';
-    pwField.type = isPassword ? 'text' : 'password';
-    pwIcon.className = isPassword ? 'bi bi-eye-slash' : 'bi bi-eye';
+  document.getElementById('pwToggle').addEventListener('click', function(){
+    const f = document.getElementById('lpw');
+    const i = document.getElementById('pwIcon');
+    const show = f.type === 'password';
+    f.type = show ? 'text' : 'password';
+    i.className = show ? 'bi bi-eye-slash' : 'bi bi-eye';
   });
 
-  // Loading state on submit
-  document.getElementById('loginForm').addEventListener('submit', function () {
-    const btn = document.getElementById('loginBtn');
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Signing in…';
-    btn.disabled = true;
+  // Loading state
+  document.getElementById('loginForm').addEventListener('submit', function(){
+    const b = document.getElementById('loginBtn');
+    b.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Signing in…';
+    b.disabled = true;
   });
 
-  // Auto-fill demo credentials on demo box click
-  document.querySelector('.demo-box').style.cursor = 'pointer';
-  document.querySelector('.demo-box').title = 'Click to auto-fill demo credentials';
-  document.querySelector('.demo-box').addEventListener('click', function () {
-    document.getElementById('email').value = 'admin@store.com';
-    pwField.value = 'Admin@123456';
-    this.innerHTML = '<strong>✅ Credentials filled!</strong> Click Sign In to continue.';
+  // Auto-fill demo
+  document.getElementById('demoHint').addEventListener('click', function(){
+    document.getElementById('lemail').value = 'admin@store.com';
+    document.getElementById('lpw').value = 'Admin@123456';
+    this.innerHTML = '<strong>✅ Filled!</strong> Click Sign In to continue.';
   });
 </script>
 {% endblock %}
