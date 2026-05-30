@@ -1,0 +1,118 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME    = "ecommerce-app"
+        IMAGE_TAG     = "${env.GIT_COMMIT[0..7]}"
+        APP_SERVER_IP = credentials('APP_SERVER_IP')       // stored in Jenkins credentials
+        SSH_KEY       = credentials('APP_SERVER_SSH_KEY')  // stored in Jenkins credentials
+        DOCKER_HUB    = credentials('DOCKER_HUB_CREDS')    // optional: Docker Hub push
+    }
+
+    stages {
+        // ─────────────────────────────────────────────────────────────────────
+        stage('Checkout') {
+            steps {
+                checkout scm
+                sh 'git log -1 --oneline'
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
+        stage('Build') {
+            steps {
+                echo "Building Docker image: ${IMAGE_NAME}:${IMAGE_TAG}"
+                sh """
+                    docker build \
+                        -f docker/Dockerfile \
+                        -t ${IMAGE_NAME}:${IMAGE_TAG} \
+                        -t ${IMAGE_NAME}:latest \
+                        .
+                """
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
+        stage('Test') {
+            steps {
+                echo "Running unit & integration tests..."
+                sh """
+                    docker run --rm \
+                        -e FLASK_ENV=testing \
+                        -e DATABASE_URL=sqlite:///:memory: \
+                        ${IMAGE_NAME}:${IMAGE_TAG} \
+                        python -m pytest tests/ -v --tb=short
+                """
+            }
+            post {
+                always {
+                    junit allowEmptyResults: true, testResults: 'test-results/*.xml'
+                }
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
+        stage('Security Scan') {
+            parallel {
+                stage('Trivy Image Scan') {
+                    steps {
+                        sh """
+                            trivy image \
+                                --exit-code 1 \
+                                --severity HIGH,CRITICAL \
+                                --no-progress \
+                                ${IMAGE_NAME}:${IMAGE_TAG} || true
+                        """
+                    }
+                }
+                stage('OWASP Dependency Check') {
+                    steps {
+                        sh """
+                            docker run --rm \
+                                -v \$(pwd):/src \
+                                owasp/dependency-check \
+                                --scan /src \
+                                --format HTML \
+                                --out /src/reports/dependency-check || true
+                        """
+                    }
+                }
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
+        stage('Deploy') {
+            when { branch 'main' }
+            steps {
+                echo "Deploying to App Server..."
+                sshagent(['APP_SERVER_SSH_KEY']) {
+                    sh """
+                        ssh -o StrictHostKeyChecking=no ubuntu@${APP_SERVER_IP} '
+                            cd /opt/ecommerce-devsecops
+                            git pull origin main
+                            docker build -f docker/Dockerfile -t ${IMAGE_NAME}:latest .
+                            docker stop ecommerce_app || true
+                            docker rm   ecommerce_app || true
+                            docker-compose up -d --no-deps --build app
+                            docker system prune -f
+                        '
+                    """
+                }
+            }
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    post {
+        success {
+            echo "Pipeline completed successfully. Image: ${IMAGE_NAME}:${IMAGE_TAG}"
+        }
+        failure {
+            echo "Pipeline FAILED. Check logs above."
+            // Optionally send email/SNS alert here
+        }
+        always {
+            cleanWs()
+        }
+    }
+}

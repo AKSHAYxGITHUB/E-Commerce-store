@@ -1,0 +1,66 @@
+version: "3.9"
+
+services:
+  # ── Flask app ───────────────────────────────────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: ecommerce_app
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      FLASK_ENV: development
+      DATABASE_URL: mysql+pymysql://ecomuser:ecompass@db:3306/ecommerce_db
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - ecom_net
+
+  # ── MySQL database ──────────────────────────────────────────────────────────
+  db:
+    image: mysql:8.0
+    container_name: ecommerce_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: ecommerce_db
+      MYSQL_USER: ecomuser
+      MYSQL_PASSWORD: ecompass
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uecomuser", "-pecompass"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ecom_net
+
+  # ── Nginx reverse proxy ─────────────────────────────────────────────────────
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: ecommerce_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./config/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+    networks:
+      - ecom_net
+
+volumes:
+  db_data:
+
+networks:
+  ecom_net:
+    driver: bridge

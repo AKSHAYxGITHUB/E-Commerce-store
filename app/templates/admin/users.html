@@ -1,0 +1,40 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Customers{% endblock %}
+{% block page_title %}Customers{% endblock %}
+
+{% block content %}
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-0">
+    <table class="table align-middle mb-0">
+      <thead class="table-light">
+        <tr><th>#</th><th>Name</th><th>Email</th><th>Joined</th><th class="text-center">Status</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for customer in customers %}
+        <tr>
+          <td class="text-muted small">{{ customer.id }}</td>
+          <td class="fw-semibold small">{{ customer.name }}</td>
+          <td class="small text-muted">{{ customer.email }}</td>
+          <td class="small text-muted">{{ customer.created_at.strftime('%d %b %Y') }}</td>
+          <td class="text-center">
+            <span class="badge bg-{{ 'success' if customer.is_active else 'danger' }}">
+              {{ 'Active' if customer.is_active else 'Disabled' }}
+            </span>
+          </td>
+          <td>
+            <form method="POST" action="{{ url_for('admin.user_toggle', user_id=customer.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+              <button type="submit" class="btn btn-sm btn-{{ 'outline-danger' if customer.is_active else 'outline-success' }}">
+                {{ 'Disable' if customer.is_active else 'Enable' }}
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-center text-muted py-4">No customers yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

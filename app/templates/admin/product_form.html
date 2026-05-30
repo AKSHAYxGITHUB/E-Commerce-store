@@ -1,0 +1,84 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}{{ 'Edit' if action == 'edit' else 'New' }} Product{% endblock %}
+{% block page_title %}{{ 'Edit Product' if action == 'edit' else 'Add New Product' }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-xl-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <form method="POST"
+              action="{{ url_for('admin.product_edit', product_id=product.id) if action == 'edit' else url_for('admin.product_new') }}"
+              enctype="multipart/form-data">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label fw-semibold">Product Name *</label>
+              <input type="text" name="name" class="form-control"
+                     value="{{ product.name if product else '' }}" required maxlength="200" />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Category</label>
+              <select name="category_id" class="form-select">
+                <option value="">— None —</option>
+                {% for cat in categories %}
+                <option value="{{ cat.id }}"
+                  {% if product and product.category_id == cat.id %}selected{% endif %}>
+                  {{ cat.name }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Price (₹) *</label>
+              <input type="number" name="price" class="form-control" step="0.01" min="0"
+                     value="{{ product.price if product else '' }}" required />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Stock *</label>
+              <input type="number" name="stock" class="form-control" min="0"
+                     value="{{ product.stock if product else '0' }}" required />
+            </div>
+
+            <div class="col-12">
+              <label class="form-label fw-semibold">Description *</label>
+              <textarea name="description" class="form-control" rows="4" required>{{ product.description if product else '' }}</textarea>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label fw-semibold">Product Image</label>
+              {% if product and product.image_key %}
+              <div class="mb-2">
+                <img src="{{ product.image_url }}" height="80" class="rounded border" alt="current" />
+                <small class="text-muted ms-2">Current image</small>
+              </div>
+              {% endif %}
+              <input type="file" name="image" class="form-control" accept="image/png,image/jpeg,image/webp" />
+              <div class="form-text">Max 5 MB · JPG / PNG / WebP. Image is uploaded to S3 and served via CloudFront.</div>
+            </div>
+
+            {% if action == 'edit' %}
+            <div class="col-12">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="is_active" id="isActive"
+                       {% if product.is_active %}checked{% endif %} />
+                <label class="form-check-label" for="isActive">Active (visible to customers)</label>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+
+          <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-warning fw-bold px-4">
+              {{ 'Update Product' if action == 'edit' else 'Create Product' }}
+            </button>
+            <a href="{{ url_for('admin.products') }}" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

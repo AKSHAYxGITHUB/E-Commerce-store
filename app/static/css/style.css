@@ -1,0 +1,23 @@
+/* ── ShopSecure – Custom Styles ─────────────────────────────────────────── */
+
+body { font-family: 'Segoe UI', system-ui, sans-serif; }
+
+/* Product cards */
+.product-card { transition: transform .15s ease, box-shadow .15s ease; }
+.product-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12) !important; }
+
+.product-img {
+  height: 200px;
+  object-fit: cover;
+  width: 100%;
+  background: #f8f9fa;
+}
+
+/* Navbar active */
+.navbar .nav-link.active { color: #ffc107 !important; }
+
+/* Utility */
+.x-small { font-size: .7rem; }
+
+/* Custom badge colours */
+.badge.bg-info { color: #fff; }

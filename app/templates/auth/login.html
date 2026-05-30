@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-5">
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+          <h3 class="card-title mb-4 text-center fw-bold">
+            <i class="bi bi-lock-fill text-warning"></i> Login
+          </h3>
+          <form method="POST" action="{{ url_for('auth.login') }}" novalidate>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Email address</label>
+              <input type="email" name="email" class="form-control"
+                     value="{{ email|default('') }}" required autocomplete="email" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Password</label>
+              <div class="input-group">
+                <input type="password" name="password" id="pw" class="form-control"
+                       required autocomplete="current-password" />
+                <button type="button" class="btn btn-outline-secondary" id="togglePw">
+                  <i class="bi bi-eye"></i>
+                </button>
+              </div>
+            </div>
+            <div class="d-grid mt-4">
+              <button type="submit" class="btn btn-warning fw-bold">Login</button>
+            </div>
+          </form>
+          <p class="text-center mt-3 mb-0 small">
+            Don't have an account? <a href="{{ url_for('auth.register') }}">Register here</a>
+          </p>
+        </div>
+      </div>
+      <!-- Demo credentials hint -->
+      <div class="alert alert-info mt-3 small">
+        <strong>Demo Admin:</strong> admin@store.com / Admin@123456
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.getElementById('togglePw').addEventListener('click', function () {
+    const pw = document.getElementById('pw');
+    const icon = this.querySelector('i');
+    if (pw.type === 'password') { pw.type = 'text'; icon.className = 'bi bi-eye-slash'; }
+    else { pw.type = 'password'; icon.className = 'bi bi-eye'; }
+  });
+</script>
+{% endblock %}

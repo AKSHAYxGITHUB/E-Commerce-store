@@ -1,0 +1,10 @@
+/* ── Admin Panel Styles ──────────────────────────────────────────────────── */
+
+.sidebar { position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+
+.sidebar .nav-link { border-radius: 6px; padding: .5rem .75rem; font-size: .9rem; }
+.sidebar .nav-link:hover { background: rgba(255,255,255,.1); }
+.sidebar .active-link { background: rgba(255,193,7,.2) !important; color: #ffc107 !important; }
+
+.table th { font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; color: #6c757d; }
+.table td { font-size: .875rem; }

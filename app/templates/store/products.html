@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Products{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row">
+    <!-- Sidebar -->
+    <div class="col-md-2 mb-4">
+      <h6 class="fw-bold text-uppercase small text-muted">Categories</h6>
+      <ul class="list-unstyled">
+        <li><a href="{{ url_for('store.products') }}"
+               class="text-decoration-none {{ 'fw-bold text-warning' if not current_category }}">All</a></li>
+        {% for cat in categories %}
+        <li><a href="{{ url_for('store.products', category=cat.slug) }}"
+               class="text-decoration-none {{ 'fw-bold text-warning' if current_category == cat.slug }}">
+          {{ cat.name }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <!-- Products grid -->
+    <div class="col-md-10">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0">
+          {% if search_query %}Results for "{{ search_query }}"
+          {% elif current_category %}{{ current_category|title }}
+          {% else %}All Products{% endif %}
+          <small class="text-muted fs-6">({{ pagination.total }})</small>
+        </h5>
+      </div>
+
+      <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
+        {% for product in products %}
+        <div class="col">
+          <div class="card h-100 border-0 shadow-sm product-card">
+            <a href="{{ url_for('store.product_detail', product_id=product.id) }}">
+              <img src="{{ product.image_url }}" class="card-img-top product-img" alt="{{ product.name }}" />
+            </a>
+            <div class="card-body d-flex flex-column">
+              <p class="small text-muted mb-1">{{ product.category.name if product.category else '—' }}</p>
+              <h6 class="card-title">
+                <a href="{{ url_for('store.product_detail', product_id=product.id) }}"
+                   class="text-dark text-decoration-none fw-semibold">{{ product.name }}</a>
+              </h6>
+              <p class="fw-bold text-warning mt-auto mb-2">₹{{ "%.2f"|format(product.price) }}</p>
+              {% if product.in_stock %}
+              <form method="POST" action="{{ url_for('store.cart_add') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                <input type="hidden" name="product_id" value="{{ product.id }}" />
+                <input type="hidden" name="quantity" value="1" />
+                <button class="btn btn-warning btn-sm w-100"><i class="bi bi-cart-plus"></i> Add to Cart</button>
+              </form>
+              {% else %}
+              <button class="btn btn-secondary btn-sm w-100" disabled>Out of Stock</button>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <div class="col-12"><p class="text-muted">No products found.</p></div>
+        {% endfor %}
+      </div>
+
+      <!-- Pagination -->
+      {% if pagination.pages > 1 %}
+      <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+          {% if pagination.has_prev %}
+          <li class="page-item">
+            <a class="page-link" href="{{ url_for('store.products', page=pagination.prev_num, category=current_category, q=search_query) }}">Previous</a>
+          </li>
+          {% endif %}
+          {% for p in pagination.iter_pages() %}
+            {% if p %}
+            <li class="page-item {{ 'active' if p == pagination.page }}">
+              <a class="page-link" href="{{ url_for('store.products', page=p, category=current_category, q=search_query) }}">{{ p }}</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">…</span></li>
+            {% endif %}
+          {% endfor %}
+          {% if pagination.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="{{ url_for('store.products', page=pagination.next_num, category=current_category, q=search_query) }}">Next</a>
+          </li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

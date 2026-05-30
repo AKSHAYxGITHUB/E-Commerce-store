@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Order #{{ order.id }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <h3 class="fw-bold mb-1">Order <span class="text-warning">#{{ order.id }}</span></h3>
+  <p class="text-muted mb-4">Placed on {{ order.created_at.strftime('%d %b %Y, %I:%M %p') }}</p>
+
+  {% set badge = {'pending':'warning','confirmed':'info','shipped':'primary','delivered':'success','cancelled':'danger'} %}
+
+  <div class="row g-4">
+    <div class="col-md-8">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0">Items</h5>
+            <span class="badge bg-{{ badge.get(order.status,'secondary') }} fs-6">{{ order.status|title }}</span>
+          </div>
+          {% for item in order.items %}
+          <div class="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom">
+            <img src="{{ item.product.image_url }}" width="64" height="64"
+                 style="object-fit:cover;border-radius:6px;" alt="{{ item.product.name }}" />
+            <div class="flex-grow-1">
+              <p class="fw-semibold mb-0">{{ item.product.name }}</p>
+              <p class="small text-muted mb-0">₹{{ "%.2f"|format(item.unit_price) }} × {{ item.quantity }}</p>
+            </div>
+            <span class="fw-bold">₹{{ "%.2f"|format(item.subtotal) }}</span>
+          </div>
+          {% endfor %}
+          <div class="d-flex justify-content-end fw-bold fs-5 mt-2">
+            <span class="me-3">Total:</span>
+            <span class="text-warning">₹{{ "%.2f"|format(order.total_amount) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h5 class="fw-bold mb-3">Shipping Details</h5>
+          <address class="small text-muted">
+            <strong class="text-dark">{{ order.shipping_name }}</strong><br />
+            {{ order.shipping_address }}<br />
+            {{ order.shipping_city }} – {{ order.shipping_pincode }}
+          </address>
+        </div>
+      </div>
+      <a href="{{ url_for('store.orders') }}" class="btn btn-outline-secondary w-100 mt-3 btn-sm">← Back to Orders</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
