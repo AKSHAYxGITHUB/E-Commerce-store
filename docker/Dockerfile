@@ -25,7 +25,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy installed packages from builder
-COPY --from=builder /root/.local /root/.local
+COPY --from=builder /root/.local /home/appuser/.local
 
 # Copy application code
 COPY . .
@@ -33,11 +33,11 @@ COPY . .
 # Non-root user for security
 RUN useradd -m -u 1001 appuser && \
     mkdir -p /var/log/ecommerce && \
-    chown -R appuser:appuser /app /var/log/ecommerce
+    chown -R appuser:appuser /app /var/log/ecommerce /home/appuser/.local
 
 USER appuser
 
-ENV PATH=/root/.local/bin:$PATH
+ENV PATH=/home/appuser/.local/bin:$PATH
 ENV FLASK_ENV=production
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
