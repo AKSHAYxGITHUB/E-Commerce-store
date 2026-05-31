@@ -113,10 +113,8 @@ def create_app(config_name: str = None):
 
     # ── Logging ───────────────────────────────────────────────────────────────
     if not app.debug:
-        os.makedirs("/var/log/ecommerce", exist_ok=True)
-        handler = RotatingFileHandler(
-            "/var/log/ecommerce/app.log", maxBytes=10_000_000, backupCount=5
-        )
+        import sys
+        handler = logging.StreamHandler(sys.stdout)
         handler.setLevel(logging.INFO)
         handler.setFormatter(
             logging.Formatter("%(asctime)s %(levelname)s %(name)s – %(message)s")
