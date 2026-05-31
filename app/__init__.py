@@ -124,6 +124,7 @@ def create_app(config_name: str = None):
 
     # ── Seed data ─────────────────────────────────────────────────────────────
     with app.app_context():
+        db.create_all()
         _seed_defaults(app)
 
     return app
