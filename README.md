@@ -64,7 +64,7 @@ Route 53 ──▶ ALB + AWS WAF ──▶ Nginx (reverse proxy, security header
                                    │
                 ┌──────────────────┼─────────────────────┐
                 ▼                  ▼                     ▼
-          MySQL (RDS)       S3 + CloudFront         CloudWatch
+          PostgreSQL (RDS)   S3 + CloudFront         CloudWatch
         (data, orders)     (product images)        (logs/metrics)
 ```
 
@@ -81,7 +81,7 @@ git push ──▶ Jenkins ──▶ Build Docker image ──▶ Run pytest ─
 ```
 ecommerce-devsecops/
 ├── app/
-│   ├── __init__.py          # App factory
+│   ├── __init__.py          # App factory (auto-initializes DB tables)
 │   ├── config.py            # Configuration classes
 │   ├── models.py            # SQLAlchemy models
 │   ├── utils.py             # S3 upload, sanitization, decorators
@@ -91,10 +91,10 @@ ecommerce-devsecops/
 │   ├── templates/           # Jinja2 HTML templates
 │   └── static/              # CSS, JS, images
 │       └── img/products/    # Bundled demo product images (SVG)
-├── docker/Dockerfile        # Production Docker image
-├── docker-compose.yml       # Local dev stack
+├── docker/Dockerfile        # Production Docker image (if not using Vercel)
+├── docker-compose.yml       # Local dev stack (PostgreSQL + Nginx)
 ├── config/nginx.conf        # Nginx reverse proxy + security headers
-├── jenkins/Jenkinsfile      # CI/CD pipeline
+├── vercel.json              # Vercel Serverless deployment config
 ├── scripts/
 │   ├── seed_data.py         # Seed admin + sample products/categories
 │   ├── generate_images.py   # Generate local product images (SVG)
@@ -107,67 +107,34 @@ ecommerce-devsecops/
 
 ---
 
-## Repository Files — Detailed Reference
+## Repository Files – Detailed Reference
 
 ### Application core (`app/`)
 
 | File | Responsibility |
 |------|----------------|
-| `app/__init__.py` | **App factory** (`create_app`). Initialises SQLAlchemy, Migrate, JWT, Bcrypt, Flask-Limiter and CSRF; registers the `auth`, `store`, `admin` blueprints; defines the `/health` check, JWT/error handlers, file logging, the **cart-count** template global, and seeds a default admin + categories on first run. |
-| `app/config.py` | Configuration classes — `BaseConfig`, `Development`, `Production`, `Testing`. Holds DB URI, JWT/cookie settings, S3/CloudFront, rate-limit, upload and pagination settings. Switched via `FLASK_ENV`. |
-| `app/models.py` | SQLAlchemy models: **User, Category, Product, Cart, Order, OrderItem**, including the `Product.image_url` property (local / S3 / CloudFront) and `subtotal` helpers. |
-| `app/utils.py` | Shared helpers — input `sanitize()` (bleach), `login_required` / `admin_required` decorators, `current_user()`, and S3 image upload/delete with Pillow resizing. |
+| `app/__init__.py` | **App factory** (`create_app`). Initializes SQLAlchemy, Migrate, JWT, Bcrypt, Flask-Limiter and CSRF; auto-creates DB tables on first run; defines health checks and file/stdout logging. |
+| `app/config.py` | Configuration classes – `BaseConfig`, `Development`, `Production`, `Testing`. Holds DB URI (Postgres), JWT/cookie settings, S3/CloudFront. |
+| `app/models.py` | SQLAlchemy models: **User, Category, Product, Cart, Order, OrderItem**, including the `Product.image_url` property (local / S3 / CloudFront). |
+| `app/utils.py` | Shared helpers – input `sanitize()` (bleach), decorators, `current_user()`, and S3 image upload/delete. |
 
 ### Blueprints (routes)
 
 | File | Responsibility |
 |------|----------------|
 | `app/auth/routes.py` | Register, login, logout, profile. Validates input, hashes passwords with bcrypt, issues JWT cookies. |
-| `app/store/routes.py` | Storefront — home, product list/search, product detail, cart add/update/remove, checkout, order history. |
-| `app/admin/routes.py` | Admin panel — dashboard stats, product CRUD (+ image upload), order status updates, user enable/disable. Protected by `@admin_required`. |
-
-### Templates (`app/templates/`)
-
-| Path | Purpose |
-|------|---------|
-| `base.html` | Master layout: navbar (with cart badge), flash messages, footer, asset includes. |
-| `auth/login.html`, `register.html`, `profile.html` | Authentication pages. |
-| `store/index.html`, `products.html`, `product_detail.html` | Storefront pages with add-to-cart forms. |
-| `store/cart.html`, `checkout.html`, `orders.html`, `order_detail.html` | Cart and order pages. |
-| `admin/*.html` | Admin dashboard, product form, products/orders/users lists, order detail. |
-| `errors/403,404,429,500.html` | Friendly error pages. |
-
-### Static assets (`app/static/`)
-
-| Path | Purpose |
-|------|---------|
-| `css/style.css` | Storefront theme (dark UI, cards, navbar, cart badge). |
-| `css/admin.css` | Admin panel styling. |
-| `img/products/*.svg` | Bundled demo product images. |
-| `img/placeholder.png` | Fallback product image. |
-
-### Scripts (`scripts/`)
-
-| File | Purpose |
-|------|---------|
-| `seed_data.py` | Seeds the admin user, categories and 16 sample products (with image keys). |
-| `generate_images.py` | Generates the local product SVG images. |
-| `backup.sh` | Automated MySQL dump + S3 upload backup. |
-| `setup_server.sh` | EC2 provisioning (Docker, Nginx, Fail2ban, etc.). |
+| `app/store/routes.py` | Storefront – home, product list/search, cart, checkout, order history. |
+| `app/admin/routes.py` | Admin panel – dashboard stats, product CRUD, order updates, user management. Protected by `@admin_required`. |
 
 ### Infrastructure & DevOps
 
 | File | Purpose |
 |------|---------|
-| `docker/Dockerfile` | Production image build (Python + Gunicorn). |
-| `docker-compose.yml` | Local stack — app + MySQL + Nginx. |
-| `config/nginx.conf` | Reverse proxy, security headers, rate limiting. |
-| `jenkins/Jenkinsfile` | CI/CD pipeline (build → test → scan → deploy). |
-| `migrations/` | Alembic/Flask-Migrate database migrations. |
-| `tests/test_auth.py` | Pytest auth tests. |
-| `run.py` | App entry point (`create_app()` → `app.run`). |
-| `requirements.txt` | Python dependencies. |
-| `.env` / `.env.example` | Environment configuration (secrets, DB, AWS). |
+| `vercel.json` | Production Serverless deployment configuration for Vercel. |
+| `docker-compose.yml` | Local stack – app + PostgreSQL + Nginx. |
+| `config/nginx.conf` | Reverse proxy, security headers, rate limiting (if using EC2). |
+| `run.py` | Local App entry point (`create_app()` + `app.run`). |
+| `.env.example` | Environment configuration (secrets, DB, AWS). |
 
 ---
 
@@ -180,18 +147,12 @@ cd ecommerce-devsecops
 
 # 2. Configure environment
 cp .env.example .env
-# Edit .env with your values
+# Edit .env with your values (ensure DATABASE_URL points to a PostgreSQL database)
 
 # 3. Start with Docker Compose
 docker-compose up -d
 
-# 4. Run database migrations
-docker exec ecommerce_app flask db upgrade
-
-# 5. Seed the admin user + sample catalogue (with product images)
-docker exec ecommerce_app python scripts/seed_data.py
-
-# 6. Open browser
+# 4. Open browser
 open http://localhost
 ```
 
@@ -205,35 +166,28 @@ pip install -r requirements.txt
 
 # Use development settings (serves cookies over plain HTTP, debug on)
 # In .env set:  FLASK_ENV=development
-python scripts/seed_data.py     # seed admin + sample products
 python run.py                   # http://localhost:5000
 ```
 
-> **Note:** `FLASK_ENV=production` marks the JWT auth cookies as `Secure`, so they
-> are only stored over **HTTPS**. When running locally over plain HTTP, use
-> `FLASK_ENV=development` or you will appear unable to log in.
+> **Note:** The app automatically creates all database tables and seeds demo products the first time it connects to the database, so there is no need to run manual migrations for fresh installs!
 
 ---
 
-## Sample Data & Product Images
+## Vercel Deployment (Recommended)
 
-The catalogue ships with 16 demo products across 5 categories, each with a
-category-themed image bundled in `app/static/img/products/`.
+This application is fully optimized for **Vercel Serverless Functions**.
 
-```bash
-python scripts/seed_data.py        # inserts admin, categories & products
-python scripts/generate_images.py  # (re)generate the product images
-```
-
-Images are stored on each product as an `image_key`. Locally bundled images use a
-`local/...` key and are served straight from `/static/img/`; in production an AWS
-**S3** object key is used instead and served via **CloudFront** (see
-`Product.image_url`). Admin-uploaded images are resized and pushed to S3
-automatically.
+1. Import this repository into Vercel.
+2. In the Vercel Dashboard, go to **Settings > Environment Variables** and add:
+   - `DATABASE_URL` (e.g., your Neon PostgreSQL connection string)
+   - `SECRET_KEY`, `JWT_SECRET_KEY`
+   - (Optional) `S3_BUCKET`, `AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` for image uploads.
+   - `FLASK_ENV=production`
+3. Click **Deploy**. Vercel will automatically run `pip install`, connect to your PostgreSQL database, and serve the application!
 
 ---
 
-## AWS Deployment
+## AWS Deployment (EC2 Alternative)
 
 1. Launch EC2 (Ubuntu 22.04, t2.medium) in a **private subnet**
 2. Run the setup script via Bastion Host:
@@ -241,23 +195,23 @@ automatically.
    ssh -J ubuntu@<bastion-ip> ubuntu@<app-server-ip>
    sudo bash /opt/ecommerce-devsecops/scripts/setup_server.sh
    ```
-3. Edit `.env` with RDS endpoint, S3 bucket, CloudFront domain
+3. Edit `.env` with RDS PostgreSQL endpoint, S3 bucket, CloudFront domain
 4. Start: `docker-compose up -d`
 
 ---
 
 ## Security Features
 
-- ✅ bcrypt/argon2 password hashing
-- ✅ JWT in HTTP-only cookies (CSRF protected)
-- ✅ SQLAlchemy ORM (no raw SQL)
-- ✅ Input sanitization with bleach
-- ✅ Rate limiting (Flask-Limiter + Nginx)
-- ✅ Fail2ban (SSH + HTTP)
-- ✅ RBAC (Customer / Admin)
-- ✅ Security headers (CSP, X-Frame-Options, HSTS)
-- ✅ AWS WAF rules on ALB
-- ✅ TLS 1.2+ via AWS ACM
+- 🛡 bcrypt password hashing
+- 🛡 JWT in HTTP-only cookies (CSRF protected)
+- 🛡 SQLAlchemy ORM (SQL Injection prevention)
+- 🛡 Input sanitization with bleach (XSS prevention)
+- 🛡 Serverless read-only filesystem (Vercel)
+- 🛡 Secrets completely decoupled from source code
+- 🛡 RBAC (Customer / Admin)
+- 🛡 Security headers (CSP, X-Frame-Options, HSTS)
+- 🛡 AWS WAF rules on ALB (if EC2 deployed)
+- 🛡 TLS 1.2+ via AWS ACM (or Vercel Edge Network)
 
 ---
 

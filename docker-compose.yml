@@ -11,7 +11,7 @@ services:
     env_file: .env
     environment:
       FLASK_ENV: development
-      DATABASE_URL: mysql+pymysql://ecomuser:ecompass@db:3306/ecommerce_db
+      DATABASE_URL: postgresql://ecomuser:ecompass@db:5432/ecommerce_db
     ports:
       - "5000:5000"
     volumes:
@@ -22,22 +22,21 @@ services:
     networks:
       - ecom_net
 
-  # ── MySQL database ──────────────────────────────────────────────────────────
+  # ── PostgreSQL database ────────────────────────────────────────────────────────
   db:
-    image: mysql:8.0
+    image: postgres:15-alpine
     container_name: ecommerce_db
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: rootpass
-      MYSQL_DATABASE: ecommerce_db
-      MYSQL_USER: ecomuser
-      MYSQL_PASSWORD: ecompass
+      POSTGRES_DB: ecommerce_db
+      POSTGRES_USER: ecomuser
+      POSTGRES_PASSWORD: ecompass
     volumes:
-      - db_data:/var/lib/mysql
+      - db_data:/var/lib/postgresql/data
     ports:
-      - "3306:3306"
+      - "5432:5432"
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uecomuser", "-pecompass"]
+      test: ["CMD", "pg_isready", "-U", "ecomuser", "-d", "ecommerce_db"]
       interval: 10s
       timeout: 5s
       retries: 5
