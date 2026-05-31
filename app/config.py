@@ -13,7 +13,7 @@ class BaseConfig:
     # ── Database ──────────────────────────────────────────────────────────────
     SQLALCHEMY_DATABASE_URI = os.getenv(
         "DATABASE_URL",
-        "mysql+pymysql://root:root@localhost:3306/ecommerce_db",
+        "postgresql://postgres:postgres@localhost:5432/ecommerce_db",
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_POOL_RECYCLE = 280
@@ -56,7 +56,7 @@ class DevelopmentConfig(BaseConfig):
     JWT_COOKIE_SECURE = False        # Allow HTTP in dev
     SQLALCHEMY_DATABASE_URI = os.getenv(
         "DATABASE_URL",
-        "mysql+pymysql://root:root@localhost:3306/ecommerce_db",
+        "postgresql://postgres:postgres@localhost:5432/ecommerce_db",
     )
 
 
