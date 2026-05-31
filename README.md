@@ -1,11 +1,11 @@
 # ShopSecure – Cloud-Based E-Commerce DevSecOps Project
 
 ![Flask](https://img.shields.io/badge/Flask-3.0-green)
-![AWS](https://img.shields.io/badge/AWS-EC2%20%7C%20RDS%20%7C%20S3-orange)
-![Docker](https://img.shields.io/badge/Docker-Containerized-blue)
-![Jenkins](https://img.shields.io/badge/CI%2FCD-Jenkins-red)
+![Vercel](https://img.shields.io/badge/Vercel-Serverless-black)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-blue)
+![AWS](https://img.shields.io/badge/AWS-S3%20%7C%20CloudFront-orange)
 
-> Cloud-based secure e-commerce web application built with DevSecOps best practices on AWS.
+> Cloud-based secure e-commerce web application built with DevSecOps best practices, deployed on Vercel and AWS.
 
 ---
 
@@ -13,13 +13,13 @@
 
 | Layer | Technology |
 |-------|-----------|
-| Application | Python 3.11 / Flask |
-| Database | MySQL 8.0 (AWS RDS) |
-| Web Server | Nginx (reverse proxy) |
-| Container | Docker + Docker Compose |
-| CI/CD | Jenkins |
-| Cloud | AWS EC2, RDS, S3, CloudFront, ALB, Route 53 |
-| Monitoring | AWS CloudWatch |
+| Application | Python 3.12 / Flask |
+| Database | PostgreSQL (Neon / AWS RDS) |
+| Hosting | Vercel (Serverless) / Nginx + Docker (EC2) |
+| Container | Docker + Docker Compose (Local / EC2) |
+| CI/CD | Vercel Automated Deployments / Jenkins |
+| Cloud | Vercel Edge Network, AWS S3, CloudFront |
+| Monitoring | Vercel Analytics / AWS CloudWatch |
 | Security | bcrypt, JWT, Flask-Limiter, Fail2ban, WAF |
 
 ---
