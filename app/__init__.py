@@ -123,9 +123,15 @@ def create_app(config_name: str = None):
         app.logger.setLevel(logging.INFO)
 
     # ── Seed data ─────────────────────────────────────────────────────────────
+    # Done at startup for convenience. Wrapped so a missing/unreachable database
+    # (e.g. on a serverless cold start before DATABASE_URL is configured) does
+    # not crash the whole function at import time.
     with app.app_context():
-        db.create_all()
-        _seed_defaults(app)
+        try:
+            db.create_all()
+            _seed_defaults(app)
+        except Exception as exc:
+            app.logger.warning("Database init/seed skipped — DB unavailable: %s", exc)
 
     return app
 

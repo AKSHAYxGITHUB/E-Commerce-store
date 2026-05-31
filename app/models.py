@@ -9,7 +9,7 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     name = db.Column(db.String(100), nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
-    role = db.Column(db.Enum("customer", "admin"), default="customer", nullable=False)
+    role = db.Column(db.Enum("customer", "admin", name="user_role"), default="customer", nullable=False)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
@@ -107,7 +107,7 @@ class Order(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     total_amount = db.Column(db.Numeric(10, 2), nullable=False)
     status = db.Column(
-        db.Enum("pending", "confirmed", "shipped", "delivered", "cancelled"),
+        db.Enum("pending", "confirmed", "shipped", "delivered", "cancelled", name="order_status"),
         default="pending",
         nullable=False,
     )
